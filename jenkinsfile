@@ -2,7 +2,7 @@ pipeline{
     agent any
 
     stages{
-        stage("build image"){
+        stage("build image1"){
             steps{
                sh "docker build -t fashion:latest ."
             }
