@@ -1,12 +1,37 @@
 pipeline{
     agent any
-
-    stages{
-        stage("build image1"){
-            steps{
-               sh "docker build -t fashion:latest ."
-            }
-            
+        parameters {
+            string(name: 'IMAGETAG', defaultValue: '1.0.3')
         }
+    
+    stages{
+    
+        stage("build image4"){
+            steps{
+                script{
+                    // This step should not normally be used in your script. Consult the inline help for details.
+                      withDockerRegistry(credentialsId: '7033ed97-cf04-4e9d-ae5d-e4b878c8067b') {
+                       sh "docker build -t app:${params.IMAGETAG} ."
+                       sh "docker tag app:${params.IMAGETAG} soundiata87/app:${params.IMAGETAG}"
+                       sh "docker push soundiata87/app:${params.IMAGETAG}"
+                       //sh "docker rmi app:1.0.3"//
+                }
+             }
+            }
+        }
+        stage("Build and push ECR"){
+            steps{
+                script{
+                    // This step should not normally be used in your script. Consult the inline help for details.
+                        withDockerRegistry(url: '536442977594.dkr.ecr.us-east-1.amazonaws.com/') {
+                        sh "docker build -t app:${params.IMAGETAG } ." 
+                        sh "docker tag app:${params.IMAGETAG} 536442977594.dkr.ecr.us-east-1.amazonaws.com/my-static-app:${params.IMAGETAG} "
+                        sh "docker tag app:${params.IMAGETAG} 536442977594.dkr.ecr.us-east-1.amazonaws.com/my-static-app:latest"
+                        sh "docker push 536442977594.dkr.ecr.us-east-1.amazonaws.com/my-static-app:latest"
+                        echo "See if im connected"
+                 }
+                }
+            }
+        }
+     }
     }
-}
